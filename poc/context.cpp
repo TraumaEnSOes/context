@@ -22,6 +22,8 @@ static void *Master( void * ) {
 }
 
 int main( ) {
+    std::ios::sync_with_stdio( false );
+
     uvpp::createCoro( Master ).setName( "Master" );
 
     uvpp::runLoop( );
