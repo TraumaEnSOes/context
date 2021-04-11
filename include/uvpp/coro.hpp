@@ -42,11 +42,17 @@ private:
     CoroPrivate *m_details;
 };
 
+enum RunLoopOptions {
+    Default,
+    BlockSigProf,
+    MetricsIdleTime = 2
+};
+
 Coro createCoro( void *( *ep )( void * ), void *args = nullptr );
 void yield( );
 Coro thisCoro( );
 
-void runLoop( );
+void runLoop( RunLoopOptions options = RunLoopOptions::Default );
 
 } // namespace uvpp.
 

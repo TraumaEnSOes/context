@@ -5,11 +5,11 @@
 namespace uvpp {
 
 const std::string &Coro::name( ) const {
-    return m_details->name;
+    return m_details->name( );
 }
 
 void Coro::setName( std::string name ) {
-    m_details->name = std::move( name );
+    m_details->setName( std::move( name ) );
 }
 
 }
