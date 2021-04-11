@@ -1,9 +1,11 @@
-#ifndef PROCESSPRIVATE_HPP
-#define PROCESSPRIVATE_HPP
+#ifndef CORO_P_HPP
+#define CORO_P_HPP
 
 #include <boost/context/continuation.hpp>
 
 #include <exception>
+
+namespace uvpp {
 
 enum ProcessState {
     Ready,
@@ -11,29 +13,30 @@ enum ProcessState {
     Exception
 };
 
-struct ProcessPrivate {
-    ~ProcessPrivate( ) {
+struct CoroPrivate {
+    ~CoroPrivate( ) {
         // Quitamos de la lista.
         prev_->next_ = next_;
         next_->prev_ = prev_;
 
         --listCount;
     }
-    ProcessPrivate( const char *n = "Unknown process" ) : name( n ) {
-    }
-    ProcessPrivate( const ProcessPrivate & ) = delete;
-    ProcessPrivate &operator=( const ProcessPrivate & ) = delete;
+    CoroPrivate( const char *n = "Unknown process" ) : name( n ) { }
+    CoroPrivate( const CoroPrivate & ) = delete;
+    CoroPrivate &operator=( const CoroPrivate & ) = delete;
 
-    const char *name;
+    std::string name;
     int state = ProcessState::Ready;
-    void ( *entry )( ) = nullptr;
+    void *( *entry )( void * ) = nullptr;
     boost::context::continuation continuation;
     std::exception_ptr exception;
+    void *exitValue;
+    void *argument;
 
-    ProcessPrivate *prev_;
-    ProcessPrivate *next_;
+    CoroPrivate *prev_;
+    CoroPrivate *next_;
 
-    void insertBefore( ProcessPrivate *node ) {
+    void insertBefore( CoroPrivate *node ) {
         node->next_ = this;
         node->prev_ = prev_;
         prev_->next_ = node;
@@ -54,10 +57,10 @@ struct ProcessPrivate {
     static int listCount;
 };
 
-extern ProcessPrivate *ThisProcess;
+extern CoroPrivate *ThisCoro;
 
 void Scheduler( );
-void createProcess( void ( *ep )( ), const char *name = nullptr );
-void yield( );
+
+} // namespace uvpp.
 
 #endif

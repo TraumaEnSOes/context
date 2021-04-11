@@ -1,31 +1,30 @@
-#include "processprivate.hpp"
+#include "uvpp/coro.hpp"
 
 #include <iostream>
 
-static void Worker( ) {
+static void *Worker( void * ) {
     for( int idx = 0; idx < 5; ++idx ) {
-        std::cout << ThisProcess->name << ", idx " << idx << std::endl;
-        yield( );
+        std::cout << uvpp::thisCoro( ).name( ) << ", idx " << idx << std::endl;
+        uvpp::yield( );
     }
+
+    return nullptr;
 }
 
-static void Master( ) {
-    createProcess( Worker, "Worker 1" );
-    createProcess( Worker, "Worker 2" );
-    createProcess( Worker, "Worker 3" );
+static void *Master( void * ) {
+    using namespace uvpp;
+
+    createCoro( Worker ).setName( "Worker 1" );
+    createCoro( Worker ).setName( "Worker 2" );
+    createCoro( Worker ).setName( "Worker 3" );
+
+    return nullptr;
 }
 
 int main( ) {
-    // Inicializamos la lista circular de procesos.
-    {
-        ProcessPrivate *newProcess = new ProcessPrivate( "Master" );
-        newProcess->initCircularList( );
-        newProcess->entry = Master;
-        ThisProcess = newProcess;
-    }
+    uvpp::createCoro( Master ).setName( "Master" );
 
-    // Lanzamos el planificador.
-    Scheduler( );
+    uvpp::runLoop( );
 
     std::cout << std::endl;
 
